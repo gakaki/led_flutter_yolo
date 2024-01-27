@@ -39,25 +39,25 @@ class _WelcomePageState extends State<WelcomePage> {
                 },
               ),
               SizedBox(height: 16),
-              Text(
-                'Forgot password?',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: kTextColor,
-                ),
-              ),
+              // Text(
+              //   'Forgot password?',
+              //   style: TextStyle(
+              //     fontSize: 18,
+              //     color: kTextColor,
+              //   ),
+              // ),
               SizedBox(height: 54),
-              Row(
-                children: [
-                  Spacer(),
-                  LineWidget(),
-                  LoginTypeIconWidget(icon: 'assets/icons/logo_ins.png'),
-                  LoginTypeIconWidget(icon: 'assets/icons/logo_fb.png'),
-                  LoginTypeIconWidget(icon: 'assets/icons/logo_twitter.png'),
-                  LineWidget(),
-                  Spacer(),
-                ],
-              )
+              // Row(
+              //   children: [
+              //     Spacer(),
+              //     LineWidget(),
+              //     LoginTypeIconWidget(icon: 'assets/icons/logo_ins.png'),
+              //     LoginTypeIconWidget(icon: 'assets/icons/logo_fb.png'),
+              //     LoginTypeIconWidget(icon: 'assets/icons/logo_twitter.png'),
+              //     LineWidget(),
+              //     Spacer(),
+              //   ],
+              // )
             ],
           ),
         ));

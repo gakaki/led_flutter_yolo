@@ -125,19 +125,19 @@ class WelcomeHeaderWidget extends StatelessWidget {
           top: 194,
           left: 40,
           child: Column(
-            children: [
-              AppIconWidget(),
-              SizedBox(height: 8),
-              Text(
-                'Sour',
-                style: kTitleTextStyle,
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Best drink\nreceipes',
-                style: kBodyTextStyle,
-              ),
-            ],
+            // children: [
+            //   AppIconWidget(),
+            //   SizedBox(height: 8),
+            //   Text(
+            //     'Sour',
+            //     style: kTitleTextStyle,
+            //   ),
+            //   SizedBox(height: 8),
+            //   Text(
+            //     'Best drink\nreceipes',
+            //     style: kBodyTextStyle,
+            //   ),
+            // ],
           ),
         )
       ],
