@@ -57,7 +57,7 @@ class LoginBtnWidget extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: Text(
-        'Login',
+        '登录',
         style: kBtnTextStyle,
       ),
     );

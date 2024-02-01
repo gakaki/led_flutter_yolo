@@ -1,0 +1,5 @@
+rye init testrye
+rye pin cpython@3.12
+rye sync
+rye add flask
+rye sync

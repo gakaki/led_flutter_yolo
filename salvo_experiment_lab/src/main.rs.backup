@@ -1,0 +1,136 @@
+mod model;
+mod router;
+mod utils;
+
+use std::error::Error;
+use std::fmt::Display;
+use crate::model::experment_model::ExperimentItem;
+use chrono::{DateTime, NaiveDateTime, Utc};
+use futures::TryStreamExt;
+
+use mongodb::bson::{doc, DateTime as BsonDateTime};
+use mongodb::{
+    bson::Document, options::IndexOptions, Client, Collection, IndexModel,
+};
+use once_cell::sync::OnceCell;
+use salvo::prelude::*;
+
+
+use std::str::FromStr;
+use futures_util::{StreamExt, TryFutureExt};
+
+use serde::{Deserialize, Serialize};
+
+const DB_NAME: &str = "labs";
+const COLL_NAME: &str = "experiments";
+
+
+static MONGODB_CLIENT: OnceCell<Client> = OnceCell::new();
+
+#[inline]
+pub fn get_mongodb_client() -> &'static Client {
+    MONGODB_CLIENT.get().unwrap()
+}
+
+#[handler]
+async fn add_experiment(req: &mut Request, res: &mut Response)  {
+    let client = get_mongodb_client();
+    let coll_experiments = client.database(DB_NAME).collection::<Document>(COLL_NAME);
+    let new_experiment = req.parse_json::<ExperimentItem>().await.unwrap();
+
+    let naive_datetime = NaiveDateTime::parse_from_str(&new_experiment.created_at,"%Y-%m-%d %H:%M:%S")
+        .expect("Failed to parse naive datetime");
+    let chrono_datetime: DateTime<Utc> = DateTime::from_naive_utc_and_offset(naive_datetime, Utc);
+
+    let experiment = doc! {
+        "lab_id": new_experiment.lab_id,
+        "name": new_experiment.name,
+        "comment": new_experiment.comment,
+        "created_at": chrono_datetime,
+        // "created_at_bson": BsonDateTime::from(chrono_datetime)
+    };
+
+    let result = coll_experiments.insert_one(&experiment, None).await;
+    match result {
+        Ok(items) => {
+            res.render(Json(experiment.clone()));
+        },
+        Err(e) => {
+            res.render(Json("Failed to add item: {}"))
+        }
+    }
+
+}
+
+
+// #[handler]
+// async fn get_experiment(req: &mut Request, res: &mut Response)-> Result<ExperimentItem, anyhow::Error> {
+//     let client = get_mongodb_client();
+//     let coll_experiments: Collection<ExperimentItem> =
+//         client.database(DB_NAME).collection(COLL_NAME);
+//
+//     let lab_id = req.param::<String>("lab_id").unwrap();
+//     match coll_experiments
+//         .find_one(doc! { "lab_id": &lab_id }, None)
+//         .await
+//     {
+//         Ok(Some(experiment)) => res.render(Json(experiment)),
+//         Ok(None) => res.render(format!("No Experiment found with lab_id {lab_id}")),
+//         Err(e) => res.render(format!("error {e:?}")),
+//     }
+// }
+
+
+
+#[handler]
+async fn get_experiments(res: &mut Response)  {
+    let client = get_mongodb_client();
+    let coll_experiments = client
+        .database(DB_NAME)
+        .collection::<ExperimentItem>(COLL_NAME);
+
+    let cursor = coll_experiments.find(doc! {  }, None).await.unwrap();
+    println!("Output from collect():");
+    let v:Vec<ExperimentItem> = cursor.try_collect().await.unwrap();
+    println!("{:?}", v);
+
+
+    res.render(Json("adsfadsfa"));
+
+}
+async fn create_experimentname_index(client: &Client) {
+    let options = IndexOptions::builder().unique(true).build();
+    let model = IndexModel::builder()
+        .keys(doc! { "experimentname": 1 })
+        .options(options)
+        .build();
+    client
+        .database(DB_NAME)
+        .collection::<ExperimentItem>(COLL_NAME)
+        .create_index(model, None)
+        .await
+        .expect("creating an index should succeed");
+}
+#[warn(clippy::all, clippy::pedantic)]
+#[tokio::main]
+async fn main() {
+    tracing_subscriber::fmt().init();
+
+    let mongodb_uri = std::env::var("MONGODB_URI")
+        .unwrap_or_else(|_| "mongodb://root:root@127.0.0.1:27017".into());
+    let client = Client::with_uri_str(mongodb_uri)
+        .await
+        .expect("failed to connect");
+    create_experimentname_index(&client).await;
+
+    MONGODB_CLIENT.set(client).unwrap();
+
+    // router
+    let router = Router::with_path("experiments")
+        .get(get_experiments)
+        .post(add_experiment);
+        // .push(Router::with_path("<experimentname>").get(get_experiment));
+
+    let acceptor = TcpListener::new("0.0.0.0:5800").bind().await;
+    Server::new(acceptor).serve(router).await;
+}

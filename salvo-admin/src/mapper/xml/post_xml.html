@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
+<mapper>
+    <select id="get_post_page">
+        `select * from sys_post`
+        <where>
+            1 = 1
+            <if test="post_code != ''">
+                ` and post_code = #{post_code}`
+            </if>
+            <if test="post_name != ''">
+                ` and post_name = #{post_name}`
+            </if>
+            <if test="status != ''">
+                ` and status = #{status}`
+            </if>
+            ` limit #{page_num},#{page_size}`
+        </where>
+    </select>
+    <select id="get_post_by_id">
+        `select * from sys_post`
+        <where>
+            `post_id = #{post_id}`
+        </where>
+    </select>
+    <select id="get_post_count">
+        `select count(*) from sys_post`
+        <where>
+            1 = 1
+            <if test="post_code != ''">
+                ` and post_code = #{post_code}`
+            </if>
+            <if test="post_name != ''">
+                ` and post_name = #{post_name}`
+            </if>
+            <if test="status != ''">
+                ` and status = #{status}`
+            </if>
+        </where>
+    </select>
+    <delete id="del_post_by_id">
+        `delete from sys_post`
+        <where>
+            `1 = 1 and post_id in ( ${post_id} )`
+        </where>
+    </delete>
+    <select id="get_post_list">
+        `select * from sys_post`
+    </select>
+</mapper>

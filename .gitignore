@@ -3,3 +3,6 @@ tmp
 ml_kit_flutter
 build
 pubspec.lock
+target
+Cargo.lock
+node_modules

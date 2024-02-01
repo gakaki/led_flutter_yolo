@@ -54,27 +54,27 @@ class LoginBodyWidget extends StatelessWidget {
         children: [
           SizedBox(height: 86),
           Text(
-            'Login',
+            '登录',
             style: kTitleTextStyle,
           ),
           SizedBox(height: 20),
           Text(
-            'Your Email',
+            '用户名',
             style: kBodyTextStyle,
           ),
           SizedBox(height: 4),
           LoginInput(
-            hintText: 'Email',
+            hintText: '用户名',
             prefixIcon: 'assets/icons/icon_email.png',
           ),
           SizedBox(height: 16),
           Text(
-            'Your Password',
+            '密码',
             style: kBodyTextStyle,
           ),
           SizedBox(height: 4),
           LoginInput(
-            hintText: 'Password',
+            hintText: '密码',
             prefixIcon: 'assets/icons/icon_pwd.png',
             obscureText: true,
           ),

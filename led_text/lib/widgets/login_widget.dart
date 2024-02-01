@@ -68,7 +68,7 @@ class LoginBtnIconWidget extends StatelessWidget {
             children: [
               SizedBox(width: 34),
               BtnTextWhiteWidget(
-                text: 'Login',
+                text: '登录',
               ),
               Spacer(),
               Image.asset(

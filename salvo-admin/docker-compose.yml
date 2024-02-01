@@ -1,0 +1,142 @@
+services:
+  mysql:
+    image: mysql:8.3.0-oraclelinux8
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./config/mysql/mysql.cnf:/etc/mysql/conf.d/mysql.cnf:ro
+      - ./data/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+      TZ: 'Asia/Shanghai'
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/mongo:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+
+  redis:
+    image: 'redis/redis-stack:latest'
+    restart: always
+    environment:
+      REDIS_ARGS: "--requirepass root"
+    ports:
+      - "6379:6379"#redis-server
+      - "8001:8001" #RedisInsight
+    #    command: /bin/sh -c "redis-server --requirepass $$REDIS_HOST_PASSWORD"
+    volumes:
+      - ./data/redis:/data
+
+  meilisearch:
+    image: 'getmeili/meilisearch:latest'
+    restart: always
+    environment:
+      MEILI_ENV: "development"
+      MEILI_HTTP_ADDR: 0.0.0.0:7700
+    ports:
+      - "7700:7700"
+    volumes:
+      - ./data/meili_data:/meili_data
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: elasticsearch
+    privileged: true
+    restart: always
+    environment:
+      - "cluster.name=elasticsearch" #设置集群名称为elasticsearch
+      - "discovery.type=single-node" #以单一节点模式启动
+      - "ES_JAVA_OPTS=-Xms512m -Xmx1024m" #设置使用jvm内存大小
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    volumes:
+      - ./data/elasticsearch/plugins:/usr/local/dockercompose/elasticsearch/plugins #插件文件挂载
+      - ./data/elasticsearch/data:/usr/local/dockercompose/elasticsearch/data:rw #数据文件挂载
+      - ./data/elasticsearch/logs:/usr/local/dockercompose/elasticsearch/logs:rw
+    ports:
+      - 9200:9200
+      - 9300:9300
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1050M
+        reservations:
+          memory: 512M
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.0
+    container_name: kibana
+    depends_on:
+      - elasticsearch #kibana在elasticsearch启动之后再启动
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200 #设置访问elasticsearch的地址
+      I18N_LOCALE: zh-CN
+    ports:
+      - 5601:5601
+
+  greptime:
+      image: greptime/greptimedb:latest
+      container_name: greptimedb
+      ports:
+        - 4000:4000
+        - 4001:4001
+        - 4002:4002
+        - 4003:4003
+        - 4004:4004
+        - 4242:4242
+      command: "standalone start --http-addr 0.0.0.0:4000 --rpc-addr 0.0.0.0:4001 --mysql-addr 0.0.0.0:4002 --postgres-addr 0.0.0.0:4003 --opentsdb-addr 0.0.0.0:4242"
+      volumes:
+        - ./data/greptimedb:/tmp/greptimedb
+
+  influxdb:
+    image: influxdb:latest
+    ports:
+      - '8086:8086'
+    volumes:
+      - ./data/influx:/var/lib/influxdb
+    environment:
+      - INFLUXDB_DB=db0
+      - INFLUXDB_ADMIN_USER=${INFLUXDB_USERNAME}
+      - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_PASSWORD}
+
+  chronograf:
+    image: chronograf:latest
+    ports:
+      - '127.0.0.1:8888:8888'
+    volumes:
+      - ./data/chronograf:/var/lib/chronograf
+    depends_on:
+      - influxdb
+    environment:
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_USERNAME=${INFLUXDB_USERNAME}
+      - INFLUXDB_PASSWORD=${INFLUXDB_PASSWORD}
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./data/grafana/data:/var/lib/grafana
+      - ./data/grafana/grafana-provisioning/:/etc/grafana/provisioning
+    depends_on:
+      - influxdb
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USERNAME}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+
+
+
+networks: {}

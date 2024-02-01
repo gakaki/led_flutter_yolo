@@ -20,14 +20,14 @@ class _WelcomePageState extends State<WelcomePage> {
           child: Column(
             children: [
               WelcomeHeaderWidget(),
-              GradientBtnWidget(
-                width: 208,
-                onTap: () {},
-                child: BtnTextWhiteWidget(
-                  text: 'Sign up',
-                ),
-              ),
-              SizedBox(height: 16),
+              // GradientBtnWidget(
+              //   width: 208,
+              //   onTap: () {},
+              //   child: BtnTextWhiteWidget(
+              //     text: '注册',
+              //   ),
+              // ),
+              // SizedBox(height: 16),
               GestureDetector(
                 child: LoginBtnWidget(),
                 onTap: () {

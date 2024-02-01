@@ -1,0 +1,10 @@
+ultralytics
+pyftpdlib
+flask
+fastapi
+paddlelabel
+#paddlepaddle-gpu
+#paddlepaddle
+paddleocr>=2.0.1
+PyMuPDF==1.21.1
+
